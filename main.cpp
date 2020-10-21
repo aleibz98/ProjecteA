@@ -5,32 +5,35 @@
 #include <time.h>
 #include <stack>
 #include <utility>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 
-typedef Grafo bool[][];
+typedef vector< vector<bool> > Grafo;
 
 struct Datos_generador{
-    int tamaño;     //Tamany del graf
+    int tamano;     //Tamany del graf
     float q;        //coeficient q
     float comps;    //nombre de components connexes que s'han generat
+    float p_connex; //probabilitat de ser connex amb els parametres indicats
 
     void print() {
-        cout << tamaño << ' ' << q << ' ' << comps << endl;
+        cout << tamano << ' ' << q << ' ' << comps << ' ' << p_connex << endl;
     }
 };
 
 struct Datos_perc_aristas{
-    int tamaño;
+    int tamano;
     float q;
     float prob_connex;
 
     void print() {
-        cout << tamaño << ' ' << q << ' ' << prob_connex << endl;
+        cout << tamano << ' ' << q << ' ' << prob_connex << endl;
     }
 };
 
-list< list > matrixToList(Grafo g){
+/*list< list > matrixToList(Grafo g){
     list< list<int> > result;
     for(int i = 0; i < g.size(); i++){
         for(int j = 0; j < g.size(); j++){
@@ -39,6 +42,7 @@ list< list > matrixToList(Grafo g){
     }
     return result;
 }
+*/
 
 int contarCompConexas(Grafo g){
     int componentes = 0;
@@ -71,10 +75,10 @@ int contarCompConexas(Grafo g){
 }
 
 Grafo generador_basico(int size, float probabilidad){
-    bool[size][size] result = {false};
+    vector< vector<bool> > result(size, vector<bool>(size,false));
     for(int i = 0; i < size; ++i){
         for(int j = 0; j < size; ++j){
-            if(rand() >= q){
+            if(rand()%100 <= probabilidad*100){
                 result[i][j] = true;
                 result[j][i] = true;
             }
@@ -83,16 +87,47 @@ Grafo generador_basico(int size, float probabilidad){
     return result;
 }
 
+Grafo random_geometric_graph(int size, float r){
+      vector< pair<float,float> > puntos(size);
+      vector< vector<bool> > result(size, vector<bool>(size,false));
+
+      //generar punts aleatoris
+      for(int i = 0; i < size; ++i){
+          float x = rand()%10000 / 10000;
+          float y = rand()%10000 / 10000;
+          puntos.append(make_pair(x,y));
+      }
+
+      for(int i = 0; i < size; i++){
+          for(int j = 0; j < size; j++){
+              float x1, x2, y1, y2;
+              x1 = puntos[i].first;
+              x2 = puntos[j].first;
+              y1 = puntos[i].second;
+              y2 = puntos[j].second;
+
+              float d = cmath.sqrt(cmath.pow(x1-x2,2)+cmath.pow(y1-y2,2));
+              if(d <= r){
+                  result[i][j] = true;
+                  result[j][i] = true;
+              }
+          }
+      }
+      return result;
+}
+
+
 Grafo percolacion_nodos(list< list<int> > g, float q){
     //Aqui es suposa que el graf estaria representat amb la llista d'adjacencies
 
 }
 
+
 Grafo percolacion_aristas(Grafo g, float q){
     Grafo copia = g;        //aixo fa una copia real o nomes copia la referencia a memoria??
     for(int i = 0; i < g.size(); ++i){
         for(int j = 0; j < g.size(); ++j){
-            if(g[i][j] and rand() < q){
+            if(g[i][j] and rand()%100 < q*100){
                 copia[i][j] = false;
                 copia[j][i] = false;
             }
@@ -105,7 +140,7 @@ Grafo percolacion_aristas(Grafo g, float q){
 //Aqui utilitzem 'grafo' pero ens referim a una graella
 bool graellaValida(Grafo g){
     stack< pair<int,int> > s;
-    bool[g.size()][g.size()] checks = {false};
+    vector< vector<bool> > checks(g.size(), vector<bool>(g.size(),false));
 
     for(int i = 0; i < g.size(); i++){
         s.push(make_pair(i,g.size()-1));    //Primer fiquem tota la fila d'abaix a la pila
@@ -145,46 +180,59 @@ int main() {
 
     //TESTERS
     //Components connexes
-    int sizes[3] = {20, 60, 100};
-    Datos_generador res_connexio[300]; //struct per guardar la info
+    vector<int> sizes = {10, 20, 40, 60, 80, 100};
+    Datos_generador res_connexio[600]; //struct per guardar la info
     for(int k = 0; k < sizes.size(); k++) {
         float coef = 0.0;
         for (int i = 0; i < 100; ++i) {
             int comps = 0;
-            for (int j = 0; j < 5; ++j) {
+            int connex = 0;
+            for (int j = 0; j < 50; ++j) {
                 Grafo g = generador_basico(sizes[k],coef);
-                comps = contarCompConexas(g);
+                int aux = contarCompConexas(g);
+                comps += aux;
+                if (aux == 1) connex++;
             }
-            res_connexio[k*100 + i].comps = comps/5.0;
+            res_connexio[k*100 + i].comps = comps/50.0;
             res_connexio[k*100 + i].q = coef;
-            res_connexio[k*100 + i].tamaño = sizes[k];
-
-            coef += 0.01;
+            res_connexio[k*100 + i].tamano = sizes[k];
+            float prob_connex = connex / 50.0;
+            res_connexio[k*100 + i].p_connex = prob_connex;
+            coef += 0.005;
         }
+    }
+
+    for(auto a:res_connexio){
+        a.print();
     }
 
     //Percolacio arestes
     //Suposarem que els grafs tenen que ser connexos
+    /*
     Datos_perc_aristas results[300];          //first tindra el valor del coeficient q i second tindra el valor de f(q)
     for(int k = 0; k < sizes.size(); ++k) {
         float val = 0.0;
         for (int i = 0; i < 100; ++i) {            //Farem 20 iteracions buscant aproximar els punts de transició, per als quals f(q) passa de 0 -> 1
             int suma = 0;
             for (int j = 0; j < 10; j++) {        //Per a cada iteració, farem 10 proves per obtenir el promig
-                Grafo g = generador_basico(sizes[k],probabilitat);      //Aquesta probabilitat tindria que generar un graf connex
-                if(contarCompConexas(g) > 1) j--;
+                Grafo g = generador_basico(sizes[k], ------);      //Aquesta probabilitat tindria que generar un graf connex
+                int b = contarCompConexas(g);
+                if(b > 1) j--;
                 else {
                     Grafo f = percolacion_aristas(g, val);
-                    if(contarCompConexas(f) == 1) suma += 1;
+                    int a = contarCompConexas(f);
+                    if(a == 1) suma += 1;
                 }
             }
-            results[k*20 + i].tamaño = sizes[k];
+            results[k*20 + i].tamano = sizes[k];
             results[k*20 + i].prob_connex = suma/10.0;
             results[k*20 + i].q = val;
 
             val += 0.01;
         }
     }
+    */
+
 
 
 
