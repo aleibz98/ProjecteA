@@ -162,7 +162,7 @@ Grafo percolacion_nodos(Grafo g, float q){
 
 
 Grafo percolacion_aristas(Grafo g, float q){
-    Grafo copia = g;        //aixo fa una copia real o nomes copia la referencia a memoria??
+    Grafo copia = g;
     for(int i = 0; i < g.size(); ++i){
         for(int j = 0; j < g.size(); ++j){
             if(g[i][j] and rand()%100 < q*100){
