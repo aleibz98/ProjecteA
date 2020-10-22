@@ -95,6 +95,7 @@ int contarCompConexas(Grafo g){
     return componentes;
 }
 
+
 Grafo generador_basico(int size, float probabilidad){
     vector< vector<bool> > result(size, vector<bool>(size,false));
     for(int i = 0; i < size; ++i){
@@ -108,15 +109,17 @@ Grafo generador_basico(int size, float probabilidad){
     return result;
 }
 
+
 Grafo random_geometric_graph(int size, float r){
       vector< pair<float,float> > puntos(size);
       vector< vector<bool> > result(size, vector<bool>(size,false));
 
       //generar punts aleatoris
       for(int i = 0; i < size; ++i){
-          float x = rand()%10000 / 10000;
-          float y = rand()%10000 / 10000;
+          float x = (double)rand() / (double)RAND_MAX;
+          float y = (double)rand() / (double)RAND_MAX;
           puntos[i] = make_pair(x,y);
+          //cout << x << " " << y << endl;
       }
 
       for(int i = 0; i < size; i++){
@@ -127,7 +130,7 @@ Grafo random_geometric_graph(int size, float r){
               y1 = puntos[i].second;
               y2 = puntos[j].second;
 
-              float d = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
+              float d = sqrt(pow(x1-x2,2) + pow(y1-y2,2));
               if(d <= r){
                   result[i][j] = true;
                   result[j][i] = true;
@@ -213,8 +216,11 @@ bool graellaValida(Grafo g){
 int main() {
     srand (time(NULL));
     vector<int> sizes = {10, 20, 40, 60, 80, 100};
+    float coefs_limite[] = {.5, .4, .3, .2, .2, .2};
 
     //TESTERS
+
+    /*
     //Components connexes
     int iters_coef_gen = 100;
     int repeticions_gen = 50;
@@ -243,11 +249,13 @@ int main() {
     for(auto a:res_connexio){
         a.print();
     }
-
+    */
+    /*
     //Percolacio arestes
     //Suposarem que els grafs tenen que ser connexos
-    int iters_coef_arestes = 100;
-    int repeticions_arestes = 10;
+    int iters_coef_arestes = 200;
+    int repeticions_arestes = 50;
+
 
     Datos_perc_aristas results[iters_coef_arestes * sizes.size()];          //first tindra el valor del coeficient q i second tindra el valor de f(q)
     for(int k = 0; k < sizes.size(); ++k) {
@@ -255,8 +263,8 @@ int main() {
         for (int i = 0; i < iters_coef_arestes; ++i) {            //Farem 20 iteracions buscant aproximar els punts de transició, per als quals f(q) passa de 0 -> 1
             int suma = 0;
             for (int j = 0; j < repeticions_arestes; j++) {        //Per a cada iteració, farem 10 proves per obtenir el promig
-                //Grafo g = generador_basico(sizes[k], ------);      //Aquesta probabilitat tindria que generar un graf connex
-                Grafo g = random_geometric_graph(sizes[k],------);
+                //Grafo g = generador_basico(sizes[k], coefs[k]);      //Aquesta probabilitat tindria que generar un graf connex
+                Grafo g = random_geometric_graph(sizes[k], coefs_limite[k]);
                 int b = contarCompConexas(g);
                 if(b > 1) j--;
                 else {
@@ -265,22 +273,23 @@ int main() {
                     if(a == 1) suma += 1;
                 }
             }
-            results[k*20 + i].tamano = sizes[k];
-            results[k*20 + i].prob_connex = suma/float(repeticions_arestes);
-            results[k*20 + i].q = val;
+            results[k*iters_coef_arestes + i].tamano = sizes[k];
+            results[k*iters_coef_arestes + i].prob_connex = suma/float(repeticions_arestes);
+            results[k*iters_coef_arestes + i].q = val;
 
-            val += 1 / iters_coef_arestes;
+            val += 1.0 / iters_coef_arestes;
         }
     }
 
     for(auto a:results){
         a.print();
     }
-
+    */
+    /*
 
     //Percolacio nodes
-    int iters_coef_nodes = 100;
-    int repeticions_nodes = 10;
+    int iters_coef_nodes = 200;
+    int repeticions_nodes = 50;
     Datos_perc_nodos results_nodes[iters_coef_nodes * sizes.size()];          //first tindra el valor del coeficient q i second tindra el valor de f(q)
 
     for(int k = 0; k < sizes.size(); ++k) {
@@ -289,7 +298,7 @@ int main() {
             int suma = 0;
             for (int j = 0; j < repeticions_nodes; j++) {        //Per a cada iteració, farem 10 proves per obtenir el promig
                 //Grafo g = generador_basico(sizes[k], ------);      //Aquesta probabilitat tindria que generar un graf connex
-                Grafo g = random_geometric_graph(sizes[k],------);
+                Grafo g = random_geometric_graph(sizes[k],coefs_limite[k]);
                 int b = contarCompConexas(g);
                 if(b > 1) j--;
                 else {
@@ -302,7 +311,7 @@ int main() {
             results_nodes[k*iters_coef_nodes + i].prob_connex = suma/float(repeticions_nodes);
             results_nodes[k*iters_coef_nodes + i].q = val;
 
-            val += 1 / iters_coef_nodes;
+            val += 1.0 / iters_coef_nodes;
         }
     }
 
@@ -310,33 +319,37 @@ int main() {
         a.print();
     }
 
+    */
 
     //Graella
-    int num_iteracions_coeficient;
-    int repeticions_graella;
+    int num_iteracions_coeficient = 200;
+    int repeticions_graella = 50;
     Datos_matriz resultados_matriz[num_iteracions_coeficient*sizes.size()];
 
     //Suposarem que la graella original te que ser valida abans d'aplicar-hi la percolacio
     int it = 0;
-    for (auto size: sizes) {
+    for (int k = 0; k < sizes.size(); ++k) {
         float coef = 0.0;
         for (int i = 0; i < num_iteracions_coeficient; ++i) {
             int contador = 0;
             for (int j = 0; j < repeticions_graella; ++j) {
-                Grafo g = random_geometric_graph(size, coef); //fixar el coeficient o iterar amb diferents coeficients
+                Grafo g = random_geometric_graph(sizes[k], coef); //fixar el coeficient o iterar amb diferents coeficients
                 if (graellaValida(g)) {
-                    Grafo g2 = percolacion_nodos(g, q); //fixar q o iterar amb diferents
+                    /*
+                    Grafo g2 = percolacion_nodos(g, coef); //fixar q o iterar amb diferents
                     if (graellaValida(g2)) {
                         contador++;
                     }
+                    */
+                    contador++;
                 }
             }
-            resultados_matriz[it].tamano = size;
+            resultados_matriz[it].tamano = sizes[k];
             resultados_matriz[it].q = coef;
             resultados_matriz[it].p_valida = contador / float(repeticions_graella);
             it++;
 
-            coef += 1/num_iteracions_coeficient;
+            coef += 1.0 / num_iteracions_coeficient;
         }
     }
 
