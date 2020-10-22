@@ -220,9 +220,9 @@ int main() {
 
     //TESTERS
 
-    /*
+
     //Components connexes
-    int iters_coef_gen = 100;
+    int iters_coef_gen = 200;
     int repeticions_gen = 50;
     Datos_generador res_connexio[iters_coef_gen * sizes.size()]; //struct per guardar la info
     for(int k = 0; k < sizes.size(); k++) {
@@ -242,14 +242,14 @@ int main() {
             res_connexio[k*iters_coef_gen + i].tamano = sizes[k];
             float prob_connex = connex / float(repeticions_gen);
             res_connexio[k*iters_coef_gen + i].p_connex = prob_connex;
-            coef += 0.005;
+            coef += 1.0 / iters_coef_gen;
         }
     }
 
     for(auto a:res_connexio){
         a.print();
     }
-    */
+
     /*
     //Percolacio arestes
     //Suposarem que els grafs tenen que ser connexos
@@ -320,6 +320,7 @@ int main() {
     }
 
     */
+    /*
 
     //Graella
     int num_iteracions_coeficient = 200;
@@ -333,14 +334,15 @@ int main() {
         for (int i = 0; i < num_iteracions_coeficient; ++i) {
             int contador = 0;
             for (int j = 0; j < repeticions_graella; ++j) {
-                Grafo g = random_geometric_graph(sizes[k], coef); //fixar el coeficient o iterar amb diferents coeficients
+                Grafo g = generador_basico(sizes[k], coef);
+                //Grafo g = random_geometric_graph(sizes[k], coef); //fixar el coeficient o iterar amb diferents coeficients
                 if (graellaValida(g)) {
-                    /*
-                    Grafo g2 = percolacion_nodos(g, coef); //fixar q o iterar amb diferents
-                    if (graellaValida(g2)) {
-                        contador++;
-                    }
-                    */
+
+                    //Grafo g2 = percolacion_nodos(g, coef); //fixar q o iterar amb diferents
+                    //if (graellaValida(g2)) {
+                    //    contador++;
+                    //}
+
                     contador++;
                 }
             }
@@ -356,4 +358,5 @@ int main() {
     for(auto a:resultados_matriz){
         a.print();
     }
+    */
 }
